@@ -39,6 +39,8 @@ class Mobile(object):
         while 1:
             try:
                 line = conn.recv(1024) # pause here and send multiple from client
+                if not line:
+                    raise socket.error
                 thread = threading.Thread(target = self.inputOperator, name = 'forked_mobile',
                                           args = (line, conn, forked_Event,))
                 thread.daemon = True

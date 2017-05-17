@@ -60,9 +60,9 @@ class Jarvis(object):
                 consoleThread.join() # order matters
                 mobileThread.join()
             except:
-                print "Shutting down Mark-2."
+                print "Shutting down Mark-2..."
                 time.sleep(1.5)
-                sys.exit()
+                sys.exit(0)
 
     def signal_handler(self, signal, frame):
         print "Shutting down Mark-2..."
