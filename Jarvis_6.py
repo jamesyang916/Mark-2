@@ -5,6 +5,8 @@ import Mobile
 import Console
 import sys
 import time
+import signal # Linux only
+import platform # check platform
 
 # Master Operator
 class Jarvis(object):    
@@ -35,9 +37,10 @@ class Jarvis(object):
         print 'Initiating objects...'
         communication_Event = threading.Event()
         communication_Event.set()
-        mobileThread = threading.Thread(target = self.oMobile.mobile, 
+
+        mobileThread = threading.Thread(target = self.oMobile.mobile, name = "Mobile",
                                         args = (communication_Event,))
-        consoleThread = threading.Thread(target = self.oConsole.console, 
+        consoleThread = threading.Thread(target = self.oConsole.console, name = "Console",
                                          args = (communication_Event,))
 
         mobileThread.daemon = True
@@ -47,14 +50,24 @@ class Jarvis(object):
         consoleThread.start()
         
         print 'Done.'
-        try:
-            consoleThread.join() # order matters
-            mobileThread.join()
-        except:
-            print "Shutting down Jarvis."
-            time.sleep(1.5)
-            sys.exit()
         
+        if platform.system() == 'Linux':
+            signal.signal(signal.SIGINT, self.signal_handler)
+            signal.pause()
+
+        else:
+            try:
+                consoleThread.join() # order matters
+                mobileThread.join()
+            except:
+                print "Shutting down Mark-2."
+                time.sleep(1.5)
+                sys.exit()
+
+    def signal_handler(self, signal, frame):
+        print "Shutting down Mark-2..."
+        time.sleep(1.5)
+        sys.exit(0)
         
 
 

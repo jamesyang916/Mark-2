@@ -2,49 +2,69 @@ import socket
 import time
 import threading
 import sys
+import signal
+import platform
 
-def main():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
-    HOST = '127.0.0.1'
-    PORT = 5002
-    s.connect((HOST, PORT))
-
-    thread1 = threading.Thread(target = inputThread, args=(s,))
-    thread2 = threading.Thread(target = outputThread, args=(s,))
-    thread1.daemon = True
-    thread2.daemon = True
-    thread1.start()
-    thread2.start()
-    try:
-        thread1.join()
-        thread2.join()
-    except:
-        pass
-
-
-def inputThread(sock):
-    while 1:
-        try:
-            line = raw_input()
-            sock.sendall(line)
-        except (KeyboardInterrupt, EOFError):
-            print "Keyboard interrupted. Disconnecting from server..."
-            time.sleep(2)
-            break
-        except socket.error:
-            break
-    sock.close()
-    sys.exit()
-
-def outputThread(sock):
-    while 1:
-        try:
-            print sock.recv(1024)
-        except socket.error:
-            print "Disconnected from server. Enter any key to exit."
-            break
-    sock.close()
-    sys.exit()
+class Client(object):
+    def __init__(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+        HOST = '127.0.0.1'
+        PORT = 5002
+        self.sock.connect((HOST, PORT))
+      
+    def run(self):
+        thread1 = threading.Thread(target = self.inputThread)
+        thread2 = threading.Thread(target = self.outputThread)
+        thread1.daemon = True
+        thread2.daemon = True
+        thread1.start()
+        thread2.start()
+      
+        if platform.system() == 'Linux':
+            signal.signal(signal.SIGINT, self.signal_handler)
+            signal.pause()
+        else:
+            try:
+                thread1.join()
+                thread2.join()
+            except:
+                time.sleep(1.5)
+                sys.exit(0)
+  
+    def inputThread(self):
+        while 1:
+            try:
+                line = raw_input()
+                self.sock.sendall(line)
+            except (KeyboardInterrupt, EOFError):
+                print "Disconnecting from server..."
+                break
+            except socket.error:
+                print "Socket error. Press ctrl+c to exit."
+                break
+        self.sock.close()
+        sys.exit()
+  
+    def outputThread(self):
+        while 1:
+            try:
+                line = self.sock.recv(1024)
+                if not line:
+                    raise socket.error
+                print line
+            except socket.error:
+                print "Socket error. Press ctrl+c to exit."
+                break
+        self.sock.close()
+        sys.exit()
+      
+    def signal_handler(self, signal, frame):
+        print "Disconnecting from server..."
+        self.sock.close()
+        time.sleep(1.5)
+        sys.exit(0)
+        
 if __name__ == '__main__':
-    main()
+    oClient = Client()
+    oClient.run()

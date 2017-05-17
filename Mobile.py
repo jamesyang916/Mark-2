@@ -11,13 +11,17 @@ class Mobile(object):
         self.sock.bind((HOST,PORT))
         self.sock.listen(10) # arbitrary
 
+    '''
+    Creates new thread for each client for I/O operation.
+    Continues until one of communication threads terminates.
+    '''
     def mobile(self, communication_Event):      
         while communication_Event.is_set():
             try:     
                 conn, addr = self.sock.accept()
                 print "Client %s connected." %(addr[0],)
 
-                connThread = threading.Thread(target = self.connOperator,
+                connThread = threading.Thread(target = self.connOperator, name = addr[0],
                                                 args = (conn, addr,))
                 connThread.daemon = True
                 connThread.start()
@@ -26,14 +30,16 @@ class Mobile(object):
                 print "Closing all threads..."
                 communication_Event.clear()
 
-    
+    '''
+    Given a client, fork every input.
+    '''
     def connOperator(self, conn, addr):
         forked_Event = threading.Event()
         forked_Event.set()
         while 1:
             try:
                 line = conn.recv(1024) # pause here and send multiple from client
-                thread = threading.Thread(target = self.inputOperator,
+                thread = threading.Thread(target = self.inputOperator, name = 'forked_mobile',
                                           args = (line, conn, forked_Event,))
                 thread.daemon = True
                 thread.start()
@@ -43,6 +49,9 @@ class Mobile(object):
                 conn.close()
                 break
 
+    '''
+    Interprets input and sends the result.
+    '''
     def inputOperator(self, line, conn, forked_Event):
         res = self.oInterpret.interpret(line)
         if res == None:

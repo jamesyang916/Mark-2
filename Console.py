@@ -4,13 +4,16 @@ class Console(object):
     def __init__(self, oInterpret):
         self.oInterpret = oInterpret
 
+    '''
+    Fork every input.
+    '''
     def console(self, communication_Event):
         forked_Event = threading.Event()
         forked_Event.set()
         while communication_Event.is_set():
             try:
                 line = raw_input()
-                thread = threading.Thread(target = self.inputOperator,
+                thread = threading.Thread(target = self.inputOperator, name = 'forked_console',
                                             args = (line, forked_Event,))
                 thread.daemon = True
                 thread.start()
@@ -18,6 +21,9 @@ class Console(object):
                 print "Closing all threads..."
                 communication_Event.clear()
 
+    '''
+    Interprets input and prints the result.
+    '''
     def inputOperator(self, line, forked_Event):
         res = self.oInterpret.interpret(line)
         if res == None:

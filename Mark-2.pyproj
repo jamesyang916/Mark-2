@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>b59b3520-d4b3-44b3-9831-2916ab2fd2a8</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>clientTest.py</StartupFile>
+    <StartupFile>__main__.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
