@@ -40,9 +40,13 @@ class Interpret(object):
         ##### Special Commmands #####
 
         # print working threads
-        if m == '*printThreads':
+        if m == '-p threads':
             threadLst = threading.enumerate()
             return "%s threads working: %s" %(len(threadLst), threadLst,)
+        elif m == '-p cpuusage':
+            import psutil
+            p = psutil.Process()
+            return "CPU Usage = %s%%" %(p.cpu_percent(interval=None),)
 
         ##### Normal Process ####
         msg = m.lower().translate(None, string.punctuation)
