@@ -38,17 +38,23 @@ class Jarvis(object):
         communication_Event = threading.Event()
         communication_Event.set()
 
-        mobileThread = threading.Thread(target = self.oMobile.mobile, name = "Mobile",
+        mobileThread = threading.Thread(target = self.oMobile.mobile, 
+                                        name = "Mobile",
                                         args = (communication_Event,))
-        consoleThread = threading.Thread(target = self.oConsole.console, name = "Console",
+        consoleThread = threading.Thread(target = self.oConsole.console, 
+                                         name = "Console",
                                          args = (communication_Event,))
-
+        updateDictThread = threading.Thread(target = self.oInterpret.updateDict, 
+                                            name = "updateDict",
+                                            args = (communication_Event,))
         mobileThread.daemon = True
         consoleThread.daemon = True
+        updateDictThread.daemon = True
 
         mobileThread.start()
         consoleThread.start()
-        
+        updateDictThread.start()
+
         print 'Done.'
         
         if platform.system() == 'Linux':
@@ -58,6 +64,7 @@ class Jarvis(object):
         else:
             try:
                 consoleThread.join() # order matters
+                updateDictThread.join()
                 mobileThread.join()
             except:
                 print "Shutting down Mark-2..."
